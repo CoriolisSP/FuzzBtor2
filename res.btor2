@@ -1,0 +1,26 @@
+1 sort bitvec 1
+2 state 1 _bv1_v0
+3 sort bitvec 8
+4 input 3 _bv8_v1
+5 srem 3 
+6 nor 3 
+7 ssubo 1 
+8 or 1 
+9 ones 3
+10 srem 3 
+11 smulo 1 
+12 smod 1 
+13 next 1 2 12
+14 dec 1 
+15 dec 1 
+16 bad 15
+17 one 1
+18 udiv 1 
+19 sdiv 1 
+20 sub 1 
+21 constd 367
+22 srl 3 
+23 sgt 1 
+24 xnor 1 
+25 ite 1 
+26 constraint 25
