@@ -1,12 +1,9 @@
-#include <iostream>
 #include "generator.h"
 #include "util.h"
 
-using std::cin;
-
-int main(int agrc, char **argv)
+int main(int argc, char **argv)
 {
-    Btor2Instance btor2(agrc, argv);
+    Btor2Instance btor2(argc, argv);
     if (btor2.CompleteConfig())
         btor2.Print();
     else

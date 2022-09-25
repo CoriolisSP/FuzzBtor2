@@ -195,8 +195,6 @@ bool GetVarInfo(char *input, Configuration *config, bool is_file)
 
 bool GetConfigInfo(int argc, char **argv, Configuration *config)
 {
-    // if (argc < 2)
-    //     return false;
     for (int i = 1; i < argc; ++i)
     {
         if (strcmp(argv[i], "-h") || strcmp(argv[i], "--help"))
