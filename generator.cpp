@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include "random.h"
+#include "util.h"
 
 using std::cout;
 using std::endl;
@@ -11,13 +12,17 @@ using std::pair;
 
 int Btor2Instance::line_num_;
 
-Btor2Instance::Btor2Instance(Configuration *cfg)
+Btor2Instance::Btor2Instance(int argc, char **argv)
+    : config_(NULL), node_manager_(NULL)
 {
-    config_ = cfg;
+    config_ = new Configuration();
+    config_completed_ = GetConfigInfo(argc, argv, config_);
+    if (config_completed_ == false)
+        return;
     node_manager_ = new NodeManager();
-    for (int i = 0; i < ((cfg->bv_vars_size_).size()); i++)
+    for (int i = 0; i < ((config_->bv_vars_size_).size()); i++)
     {
-        TreeNode *node = new TreeNode(TreeNode::BITVEC, (cfg->bv_vars_size_)[i], (cfg->bv_vars_name_)[i]);
+        TreeNode *node = new TreeNode(TreeNode::BITVEC, (config_->bv_vars_size_)[i], (config_->bv_vars_name_)[i]);
         node_manager_->InsertNode(node);
         if (RandLessThan(11) < 3)
         {
@@ -34,9 +39,10 @@ Btor2Instance::Btor2Instance(Configuration *cfg)
             }
         }
     }
-    for (int i = 0; i < ((cfg->arr_vars_idx_size_).size()); i++)
+    for (int i = 0; i < ((config_->arr_vars_idx_size_).size()); i++)
     {
-        TreeNode *node = new TreeNode(TreeNode::ARRAY, (cfg->arr_vars_idx_size_)[i], (cfg->arr_vars_ele_size_)[i], (cfg->arr_vars_name_)[i]);
+        TreeNode *node = new TreeNode(TreeNode::ARRAY,
+                                      (config_->arr_vars_idx_size_)[i], (config_->arr_vars_ele_size_)[i], (config_->arr_vars_name_)[i]);
         node_manager_->InsertNode(node);
         if (RandLessThan(16) < 1)
         {
@@ -46,8 +52,8 @@ Btor2Instance::Btor2Instance(Configuration *cfg)
         else
             state_varibles_.push_back(node);
     }
-    is_pure_bv_ = cfg->arr_vars_name_.empty();
-    SetRandSeed(cfg->seed_);
+    is_pure_bv_ = config_->arr_vars_name_.empty();
+    SetRandSeed(config_->seed_);
 
     for (auto it = state_varibles_.begin(); it != state_varibles_.end(); ++it)
     {
@@ -80,7 +86,7 @@ Btor2Instance::Btor2Instance(Configuration *cfg)
     // construct syntax trees for transition
     for (auto it = state_varibles_.begin(); it != state_varibles_.end();)
     {
-        TreeNode *tran = GenerateSyntaxTree((*it)->GetIdxSize(), (*it)->GetEleSize(), cfg->tree_depth_);
+        TreeNode *tran = GenerateSyntaxTree((*it)->GetIdxSize(), (*it)->GetEleSize(), config_->tree_depth_);
         if (tran != NULL)
         {
             transitions_.push_back(tran);
@@ -95,20 +101,28 @@ Btor2Instance::Btor2Instance(Configuration *cfg)
     }
 
     // construct syntax trees for bad properties
-    for (int i = 0; i < (cfg->bad_property_num_); ++i)
+    for (int i = 0; i < (config_->bad_property_num_); ++i)
     {
-        TreeNode *bad_p = GenerateSyntaxTree(-1, 1, cfg->tree_depth_);
+        TreeNode *bad_p = GenerateSyntaxTree(-1, 1, config_->tree_depth_);
         if (bad_p != NULL)
             bad_properties_.push_back(bad_p);
     }
 
     // construct syntax trees for constraints
-    for (int i = 0; i < (cfg->constraint_num_); ++i)
+    for (int i = 0; i < (config_->constraint_num_); ++i)
     {
-        TreeNode *constraint = GenerateSyntaxTree(-1, 1, cfg->tree_depth_);
+        TreeNode *constraint = GenerateSyntaxTree(-1, 1, config_->tree_depth_);
         if (constraint != NULL)
             constraints_.push_back(constraint);
     }
+}
+
+Btor2Instance::~Btor2Instance()
+{
+    if (config_ != NULL)
+        delete config_;
+    if (node_manager_ != NULL)
+        delete node_manager_;
 }
 
 TreeNode *Btor2Instance::GenerateSyntaxTree(int idx_size, int ele_size, int tree_depth)
@@ -253,6 +267,7 @@ TreeNode *Btor2Instance::GenerateSyntaxTree(int idx_size, int ele_size, int tree
                 return res_node;
             }
         }
+        return NULL;
     }
     else
     { // bv with size>1
@@ -339,6 +354,7 @@ TreeNode *Btor2Instance::GenerateSyntaxTree(int idx_size, int ele_size, int tree
                 return res_node;
             }
         }
+        return NULL;
     }
 }
 
@@ -393,27 +409,20 @@ TreeNode *Btor2Instance::ConstructNode_CONSTANT(int ele_size)
     switch (RandLessThan(6))
     {
     case 0:
-    {
         res_node = new TreeNode(0, ele_size);
         break;
-    }
     case 1:
-    {
         res_node = new TreeNode(1, ele_size);
         break;
-    }
     case 2:
-    {
         res_node = new TreeNode(-1, ele_size);
         break;
-    }
     default:
-    {
         res_node = new TreeNode(ele_size);
         break;
     }
-    }
-    res_node = node_manager_->InsertNode(res_node);
+    if (res_node != NULL)
+        res_node = node_manager_->InsertNode(res_node);
     return res_node;
 }
 
@@ -812,14 +821,16 @@ void Btor2Instance::Print()
     Btor2Instance::line_num_ = 1;
     for (int i = 0; i < state_varibles_.size(); ++i)
     {
-        (state_varibles_[i])->Print(node_manager_);
         TreeNode *init_val_node = state_varibles_[i]->GetInitValue();
         if (init_val_node != NULL)
-        {
             init_val_node->Print(node_manager_);
+        (state_varibles_[i])->Print(node_manager_);
+        if (init_val_node != NULL)
+        {
             cout << line_num_ << " init "
                  << node_manager_->GetSortLineId(state_varibles_[i]->GetIdxSize(), state_varibles_[i]->GetEleSize())
                  << ' ' << state_varibles_[i]->GetLineId() << ' ' << init_val_node->GetLineId() << endl;
+            (Btor2Instance::line_num_)++;
         }
         (transitions_[i])->Print(node_manager_);
         cout << line_num_ << " next "

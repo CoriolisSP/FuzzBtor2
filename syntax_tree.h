@@ -95,6 +95,8 @@ public:
     TreeNode(int val, int ele_size);
     TreeNode(int ele_size);
 
+    ~TreeNode();
+
     inline int GetIdxSize() { return idx_size_; }
     inline int GetEleSize() { return ele_size_; }
     inline oper GetOper() { return op_; }
@@ -102,13 +104,13 @@ public:
     inline string GetVarName() { return var_name_; }
     inline int NumOfSubtrees() { return sub_nodes_.size(); }
     inline int NumOfArgs() { return indexed_args_.size(); }
-    inline TreeNode *TreeNode::IthSubtree(int idx)
+    inline TreeNode *IthSubtree(int idx)
     {
         return (idx >= 0 && idx < sub_nodes_.size()) ? (sub_nodes_[idx]) : NULL;
     }
-    inline int TreeNode::IthArg(int idx)
+    inline int IthArg(int idx)
     {
-        return (idx >= 0 && idx < indexed_args_.size()) ? (indexed_args_[idx]) : NULL;
+        return indexed_args_[idx];
     }
     inline bool IthValueOfConstant(int idx)
     {
@@ -153,19 +155,19 @@ public:
     inline void SetAsInput()
     {
         assert(this->IsVariable());
+        init_value_ = NULL;
         is_input_var_ = true;
     }
     inline bool IsInput()
     {
-        init_value_ = NULL;
         return is_input_var_;
     }
     bool IsZero(); // constant 0
     bool IsOne();  // constant 1
     bool IsOnes(); // constant ffffff
 
-    void SetInitValue(TreeNode *init_val) { init_value_ = init_val; }
-    TreeNode *GetInitValue() { return init_value_; }
+    inline void SetInitValue(TreeNode *init_val) { init_value_ = init_val; }
+    inline TreeNode *GetInitValue() { return init_value_; }
 
 private:
     oper op_;
@@ -196,9 +198,10 @@ bool Identical(TreeNode *node_0, TreeNode *node_1);
 class NodeManager
 {
 public:
+    ~NodeManager();
+
     TreeNode *InsertNode(TreeNode *);
     TreeNode *GetNode(int idx_size, int ele_size, int tree_depth = -1);
-    NodeManager() {}
 
     int GetSortLineId(int idx_size, int ele_size);
     inline bool IsPrintedSort(int idx_size, int ele_size)

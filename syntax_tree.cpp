@@ -40,6 +40,12 @@ TreeNode::TreeNode(int ele_size)
         const_val_[i] = (RandLessThan(2) != 0);
 }
 
+TreeNode::~TreeNode()
+{
+    if (const_val_ != NULL)
+        delete[] const_val_;
+}
+
 bool Identical(TreeNode *node_0, TreeNode *node_1)
 {
     TreeNode::oper op = node_0->GetOper();
@@ -242,6 +248,19 @@ void NodeManager::PrintSort(int idx_size, int ele_size)
     }
 }
 
+NodeManager::~NodeManager()
+{
+    for(int i=0;i<bv_nodes_.size();++i)
+        for(int j=0;j<(bv_nodes_[i]).size();++j)
+            if(bv_nodes_[i][j]!=NULL)
+                delete bv_nodes_[i][j];
+    
+    for(int i=0;i<arr_nodes_.size();++i)
+        for(int j=0;j<(arr_nodes_[i]).size();++j)
+            if(arr_nodes_[i][j]!=NULL)
+                delete arr_nodes_[i][j];
+}
+
 void TreeNode::Print(NodeManager *node_manager)
 {
     if (line_id_ != -1) // has been printed
@@ -282,23 +301,23 @@ void TreeNode::Print(NodeManager *node_manager)
             {
             case 0:
             {
-                cout << " const " << node_manager->GetSortLineId(idx_size_, ele_size_);
+                cout << " const " << node_manager->GetSortLineId(idx_size_, ele_size_) << ' ';
                 PrintBoolArr(this->const_val_, ele_size_, BINARY);
-                cout<<endl;
+                cout << endl;
                 break;
             }
             case 1:
             {
-                cout << " constd " << node_manager->GetSortLineId(idx_size_, ele_size_);
+                cout << " constd " << node_manager->GetSortLineId(idx_size_, ele_size_) << ' ';
                 PrintBoolArr(this->const_val_, ele_size_, DECIMAL);
-                cout<<endl;
+                cout << endl;
                 break;
             }
             case 2:
             {
-                cout << " consth " << node_manager->GetSortLineId(idx_size_, ele_size_);
+                cout << " consth " << node_manager->GetSortLineId(idx_size_, ele_size_) << ' ';
                 PrintBoolArr(this->const_val_, ele_size_, HEXIMAL);
-                cout<<endl;
+                cout << endl;
                 break;
             }
             }
@@ -311,11 +330,11 @@ void TreeNode::Print(NodeManager *node_manager)
         (this->IthSubtree(i))->Print(node_manager);
     cout << Btor2Instance::line_num_ << ' ';
     PrintOpName();
-    cout << ' ' << node_manager->GetSortLineId(idx_size_, ele_size_) << ' ';
+    cout << ' ' << node_manager->GetSortLineId(idx_size_, ele_size_);
     for (int i = 0; i < this->NumOfSubtrees(); ++i)
-        (this->IthSubtree(i))->GetLineId();
+        cout << ' ' << (this->IthSubtree(i))->GetLineId();
     for (int i = 0; i < this->NumOfArgs(); ++i)
-        (this->IthSubtree(i))->IthArg(i);
+        cout << ' ' << (this->IthSubtree(i))->IthArg(i);
     cout << endl;
     this->SetLineId(Btor2Instance::line_num_);
     ++(Btor2Instance::line_num_);

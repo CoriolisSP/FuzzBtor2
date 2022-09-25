@@ -14,6 +14,6 @@ void PrintBoolArr(bool *p, int ele_size, OutputType output_type);
 
 void Usage();
 
-bool GetArgs(int argc, char **argv, Configuration *config);
+bool GetConfigInfo(int argc, char **argv, Configuration *config);
 
 #endif

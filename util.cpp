@@ -193,7 +193,7 @@ bool GetVarInfo(char *input, Configuration *config, bool is_file)
     return true;
 }
 
-bool GetArgs(int argc, char **argv, Configuration *config)
+bool GetConfigInfo(int argc, char **argv, Configuration *config)
 {
     // if (argc < 2)
     //     return false;

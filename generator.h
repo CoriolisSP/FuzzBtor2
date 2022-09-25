@@ -27,13 +27,16 @@ struct Configuration
     int seed_;
 
     Configuration() : bad_property_num_(1), constraint_num_(1), tree_depth_(5), seed_(0) {}
-    //~Configuration();
 };
 
 class Btor2Instance
 {
 public:
-    Btor2Instance(Configuration *);
+    Btor2Instance(int argc, char **argv);
+    ~Btor2Instance();
+
+    inline bool CompleteConfig() { return config_completed_; }
+
     void Print();
 
     static int line_num_;
@@ -42,10 +45,10 @@ private:
     Configuration *config_;
     NodeManager *node_manager_;
 
+    bool config_completed_;
+
     vector<TreeNode *> input_varibles_;
     vector<TreeNode *> state_varibles_;
-    vector<TreeNode *> init_value_;
-    vector<TreeNode *> constants_;
     vector<TreeNode *> transitions_;
     vector<TreeNode *> bad_properties_;
     vector<TreeNode *> constraints_;

@@ -6,15 +6,10 @@ using std::cin;
 
 int main(int agrc, char **argv)
 {
-    Configuration *config = new Configuration();
-    if (!GetArgs(agrc, argv, config))
-    {
-        Usage();
-    }
-    else
-    {
-        Btor2Instance btor2(config);
+    Btor2Instance btor2(agrc, argv);
+    if (btor2.CompleteConfig())
         btor2.Print();
-    }
+    else
+        Usage();
     return 0;
 }
