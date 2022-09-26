@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <sstream>
 
 using std::cout;
 using std::endl;
@@ -52,144 +51,144 @@ void PrintBoolArr(bool *p, int ele_size, OutputType output_type)
     }
 }
 
-bool GetVarInfo(char *input, Configuration *config, bool is_file)
+bool GetVarInfo(char *input, Configuration *config) //, bool is_file)
 {
     string token;
     int anonymous_bv_cnt = 0, anonymous_arr_cnt = 0;
-    if (is_file)
+    // if (is_file)
+    // {
+    std::ifstream fin;
+    fin.open(input, std::ios::in);
+    if (fin.is_open() == false)
     {
-        std::ifstream fin;
-        fin.open(input, std::ios::in);
-        if (fin.is_open() == false)
+        cout << "Cannot open the file: " << input << endl
+             << endl;
+        return false;
+    }
+    fin >> token;
+    bool is_bv = (token == "bv");
+    while (true)
+    {
+        int idx_size, ele_size;
+        if (is_bv)
         {
-            cout << "Cannot open the file: " << input << endl
-                 << endl;
-            return false;
-        }
-        fin >> token;
-        bool is_bv = (token == "bv");
-        while (true)
-        {
-            int idx_size, ele_size;
-            if (is_bv)
+            fin >> ele_size;
+            (config->bv_vars_size_).push_back(ele_size);
+            if (!(fin >> token))
             {
-                fin >> ele_size;
-                (config->bv_vars_size_).push_back(ele_size);
-                if (!(fin >> token))
-                {
-                    config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_bv_cnt;
-                    break;
-                }
-                else if (token == "bv" || token == "arr")
-                {
-                    is_bv = (token == "bv");
-                    config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_bv_cnt;
-                }
-                else
-                {
-                    config->bv_vars_name_.push_back(token);
-                    if (!(fin >> token))
-                        break;
-                    else
-                        is_bv = (token == "bv");
-                }
+                config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
+                ++anonymous_bv_cnt;
+                break;
+            }
+            else if (token == "bv" || token == "arr")
+            {
+                is_bv = (token == "bv");
+                config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
+                ++anonymous_bv_cnt;
             }
             else
             {
-                fin >> idx_size >> ele_size;
-                (config->arr_vars_idx_size_).push_back(idx_size);
-                (config->arr_vars_ele_size_).push_back(ele_size);
+                config->bv_vars_name_.push_back(token);
                 if (!(fin >> token))
-                {
-                    config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-                                                     "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_arr_cnt;
                     break;
-                }
-                else if (token == "bv" || token == "arr")
-                {
-                    is_bv = (token == "bv");
-                    config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-                                                     "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_arr_cnt;
-                }
                 else
-                {
-                    config->arr_vars_name_.push_back(token);
-                    if (!(fin >> token))
-                        break;
-                    else
-                        is_bv = (token == "bv");
-                }
+                    is_bv = (token == "bv");
             }
         }
-    }
-    else
-    {
-        std::stringstream sin;
-        sin << input;
-        sin >> token;
-        bool is_bv = (token == "bv");
-        while (true)
+        else
         {
-            int idx_size, ele_size;
-            if (is_bv)
+            fin >> idx_size >> ele_size;
+            (config->arr_vars_idx_size_).push_back(idx_size);
+            (config->arr_vars_ele_size_).push_back(ele_size);
+            if (!(fin >> token))
             {
-                sin >> ele_size;
-                (config->bv_vars_size_).push_back(ele_size);
-                if (!(sin >> token))
-                {
-                    config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_bv_cnt;
-                    break;
-                }
-                else if (token == "bv" || token == "arr")
-                {
-                    is_bv = (token == "bv");
-                    config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_bv_cnt;
-                }
-                else
-                {
-                    config->bv_vars_name_.push_back(token);
-                    if (!(sin >> token))
-                        break;
-                    else
-                        is_bv = (token == "bv");
-                }
+                config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
+                                                 "_v" + std::to_string(anonymous_bv_cnt));
+                ++anonymous_arr_cnt;
+                break;
+            }
+            else if (token == "bv" || token == "arr")
+            {
+                is_bv = (token == "bv");
+                config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
+                                                 "_v" + std::to_string(anonymous_bv_cnt));
+                ++anonymous_arr_cnt;
             }
             else
             {
-                sin >> idx_size >> ele_size;
-                (config->arr_vars_idx_size_).push_back(idx_size);
-                (config->arr_vars_ele_size_).push_back(ele_size);
-                if (!(sin >> token))
-                {
-                    config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-                                                     "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_arr_cnt;
+                config->arr_vars_name_.push_back(token);
+                if (!(fin >> token))
                     break;
-                }
-                else if (token == "bv" || token == "arr")
-                {
-                    is_bv = (token == "bv");
-                    config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-                                                     "_v" + std::to_string(anonymous_bv_cnt));
-                    ++anonymous_arr_cnt;
-                }
                 else
-                {
-                    config->arr_vars_name_.push_back(token);
-                    if (!(sin >> token))
-                        break;
-                    else
-                        is_bv = (token == "bv");
-                }
+                    is_bv = (token == "bv");
             }
         }
     }
+    // }
+    // else
+    // {
+    //     std::stringstream sin;
+    //     sin << input;
+    //     sin >> token;
+    //     bool is_bv = (token == "bv");
+    //     while (true)
+    //     {
+    //         int idx_size, ele_size;
+    //         if (is_bv)
+    //         {
+    //             sin >> ele_size;
+    //             (config->bv_vars_size_).push_back(ele_size);
+    //             if (!(sin >> token))
+    //             {
+    //                 config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
+    //                 ++anonymous_bv_cnt;
+    //                 break;
+    //             }
+    //             else if (token == "bv" || token == "arr")
+    //             {
+    //                 is_bv = (token == "bv");
+    //                 config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
+    //                 ++anonymous_bv_cnt;
+    //             }
+    //             else
+    //             {
+    //                 config->bv_vars_name_.push_back(token);
+    //                 if (!(sin >> token))
+    //                     break;
+    //                 else
+    //                     is_bv = (token == "bv");
+    //             }
+    //         }
+    //         else
+    //         {
+    //             sin >> idx_size >> ele_size;
+    //             (config->arr_vars_idx_size_).push_back(idx_size);
+    //             (config->arr_vars_ele_size_).push_back(ele_size);
+    //             if (!(sin >> token))
+    //             {
+    //                 config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
+    //                                                  "_v" + std::to_string(anonymous_bv_cnt));
+    //                 ++anonymous_arr_cnt;
+    //                 break;
+    //             }
+    //             else if (token == "bv" || token == "arr")
+    //             {
+    //                 is_bv = (token == "bv");
+    //                 config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
+    //                                                  "_v" + std::to_string(anonymous_bv_cnt));
+    //                 ++anonymous_arr_cnt;
+    //             }
+    //             else
+    //             {
+    //                 config->arr_vars_name_.push_back(token);
+    //                 if (!(sin >> token))
+    //                     break;
+    //                 else
+    //                     is_bv = (token == "bv");
+    //             }
+    //         }
+    //     }
+    // }
     return true;
 }
 
@@ -219,16 +218,16 @@ bool GetConfigInfo(int argc, char **argv, Configuration *config)
             ++i;
             config->seed_ = atoi(argv[i]);
         }
-        else if (strcmp(argv[i], "--variables-str"))
-        {
-            ++i;
-            if (!GetVarInfo(argv[i], config, false))
-                return false;
-        }
+        // else if (strcmp(argv[i], "--variables-str"))
+        // {
+        //     ++i;
+        //     if (!GetVarInfo(argv[i], config, false))
+        //         return false;
+        // }
         else if (strcmp(argv[i], "--variables-file"))
         {
             ++i;
-            if (!GetVarInfo(argv[i], config, true))
+            if (!GetVarInfo(argv[i], config)) //, true))
                 return false;
         }
         else
@@ -238,7 +237,7 @@ bool GetConfigInfo(int argc, char **argv, Configuration *config)
             return false;
         }
     }
-    if(config->bv_vars_name_.empty()&&config->arr_vars_name_.empty())
+    if (config->bv_vars_name_.empty() && config->arr_vars_name_.empty())
     {
         config->bv_vars_size_.push_back(1);
         config->bv_vars_name_.push_back("_bv1_v0");
@@ -250,4 +249,29 @@ bool GetConfigInfo(int argc, char **argv, Configuration *config)
 
 void Usage()
 {
+    cout << "This is a fuzzer that can randomly generate Btor2 files meeting some conditions.\n"
+         << endl;
+    cout << "Synosys: btor2fuzz [OPTION...]" << endl;
+    cout << "Options:" << endl;
+    cout << "-h, --help\n"
+         << "    print this help information" << endl;
+    cout << "--seed INT\n"
+         << "    seed for generating random number (default 0)" << endl;
+    cout << "--tree-depth INT\n"
+         << "    the depth of the corresponding syntax tree  (default 4)" << endl;
+    cout << "--bad-properties INT\n"
+         << "    the number of bad properties (default 1)" << endl;
+    cout << "--constraints INT\n"
+         << "    the number of constraints (default 1)" << endl;
+    cout << "--variables-file FILE_NAME\n"
+         << "    the file that contains the information of variables" << endl;
+    cout << "\nFormat of the variables information file:" << endl;
+    cout << "  <bv_var>  ::= 'bv' INT [STRING]" << endl;
+    cout << "  <arr_var> ::= 'arr' INT INT [STRING]" << endl;
+    cout << "  <var>     ::= <bv_var> | <arr_var>" << endl;
+    cout << "  <file>    ::= (<var>'\\n')*" << endl;
+    cout << "Example (which is also the default situattion):" << endl;
+    cout << "  bv 1 _bv1_v0" << endl
+         << "  bv 8 _bv8_v1" << endl
+         << endl;
 }

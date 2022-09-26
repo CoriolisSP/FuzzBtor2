@@ -26,7 +26,7 @@ struct Configuration
     // seed for the random number generator
     int seed_;
 
-    Configuration() : bad_property_num_(1), constraint_num_(1), tree_depth_(4), seed_(3) {}
+    Configuration() : bad_property_num_(1), constraint_num_(1), tree_depth_(4), seed_(0) {}
 };
 
 class Btor2Instance
