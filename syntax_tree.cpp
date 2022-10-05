@@ -12,7 +12,7 @@ using std::cout;
 using std::endl;
 
 TreeNode::TreeNode(int val, int ele_size)
-    : op_(CONSTANT), idx_size_(-1), ele_size_(ele_size), depth_(1), line_id_(-1), var_name_(""), is_input_var_(false), init_value_(NULL)
+    : op_(CONSTANT), idx_size_(-1), ele_size_(ele_size), depth_(1), line_id_(-1), var_name_(""), is_input_var_(false)
 {
     const_val_ = new bool[ele_size];
     if (val < 0)
@@ -33,7 +33,7 @@ TreeNode::TreeNode(int val, int ele_size)
 }
 
 TreeNode::TreeNode(int ele_size)
-    : op_(CONSTANT), idx_size_(-1), ele_size_(ele_size), depth_(1), line_id_(-1), var_name_(""), is_input_var_(false), init_value_(NULL)
+    : op_(CONSTANT), idx_size_(-1), ele_size_(ele_size), depth_(1), line_id_(-1), var_name_(""), is_input_var_(false)
 {
     const_val_ = new bool[ele_size];
     for (int i = 0; i < ele_size; i++)
@@ -91,6 +91,7 @@ bool Identical(TreeNode *node_0, TreeNode *node_1)
 
 TreeNode *NodeManager::InsertNode(TreeNode *node)
 {
+    // node->PrintDebugInfo();
     if (node == NULL)
         return NULL;
     if ((node->GetIdxSize()) < 0)
@@ -153,16 +154,11 @@ TreeNode *NodeManager::GetNode(int idx_size, int ele_size, int tree_depth)
         {
             if (bv_size_[i] == ele_size)
             {
-                if (tree_depth == -1)
-                    return bv_nodes_[i][RandLessThan((bv_nodes_[i]).size())];
-                else
+                std::random_shuffle((bv_nodes_[i]).begin(), (bv_nodes_[i]).end());
+                for (int j = 0; j < (bv_nodes_[i]).size(); ++j)
                 {
-                    std::random_shuffle((bv_nodes_[i]).begin(), (bv_nodes_[i]).end());
-                    for (int j = 0; j < (bv_nodes_[i]).size(); ++j)
-                    {
-                        if ((bv_nodes_[i][j])->GetDepth() == tree_depth)
-                            return bv_nodes_[i][j];
-                    }
+                    if ((bv_nodes_[i][j])->GetDepth() == tree_depth)
+                        return bv_nodes_[i][j];
                 }
             }
         }
@@ -173,16 +169,51 @@ TreeNode *NodeManager::GetNode(int idx_size, int ele_size, int tree_depth)
         {
             if (arr_sort_[i].first == idx_size && arr_sort_[i].second == ele_size)
             {
-                if (tree_depth == -1)
-                    return (arr_nodes_[i])[RandLessThan((arr_nodes_[i]).size())];
-                else
+
+                std::random_shuffle((arr_nodes_[i]).begin(), (arr_nodes_[i]).end());
+                for (int j = 0; j < (arr_nodes_[i]).size(); ++j)
                 {
-                    std::random_shuffle((arr_nodes_[i]).begin(), (arr_nodes_[i]).end());
-                    for (int j = 0; j < (arr_nodes_[i]).size(); ++j)
-                    {
-                        if ((arr_nodes_[i][j])->GetDepth() == tree_depth)
-                            return arr_nodes_[i][j];
-                    }
+                    if ((arr_nodes_[i][j])->GetDepth() == tree_depth)
+                        return arr_nodes_[i][j];
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+TreeNode *NodeManager::GetVarNode(int idx_size, int ele_size, bool state_var, bool for_init)
+{
+    if (idx_size < 0)
+    { // bv
+        for (int i = 0; i < bv_size_.size(); ++i)
+        {
+            if (bv_size_[i] == ele_size)
+            {
+                std::random_shuffle((bv_nodes_[i]).begin(), (bv_nodes_[i]).end());
+                for (int j = 0; j < (bv_nodes_[i]).size(); ++j)
+                {
+                    if ((bv_nodes_[i][j])->IsVariable() &&
+                        (state_var ^ (bv_nodes_[i][j])->IsInputVariable()) &&
+                        !(for_init && Btor2Instance::state_depen_->DependCurTarget(bv_nodes_[i][j])))
+                        return bv_nodes_[i][j];
+                }
+            }
+        }
+    }
+    else
+    { // arr
+        assert(state_var);
+        for (int i = 0; i < arr_sort_.size(); ++i)
+        {
+            if (arr_sort_[i].first == idx_size && arr_sort_[i].second == ele_size)
+            {
+                std::random_shuffle((arr_nodes_[i]).begin(), (arr_nodes_[i]).end());
+                for (int j = 0; j < (arr_nodes_[i]).size(); ++j)
+                {
+                    if ((arr_nodes_[i][j])->IsVariable() &&
+                        !(for_init && Btor2Instance::state_depen_->DependCurTarget(arr_nodes_[i][j])))
+                        return arr_nodes_[i][j];
                 }
             }
         }
@@ -231,10 +262,9 @@ void NodeManager::PrintSort(int idx_size, int ele_size)
 {
     if (this->IsPrintedSort(idx_size, ele_size))
         return;
-    cout << Btor2Instance::line_num_ << " sort ";
     if (idx_size == -1)
     { // bv
-        cout << "bitvec " << ele_size << endl;
+        cout<< Btor2Instance::line_num_ << " sort bitvec " << ele_size << endl;
         this->SetSortLineId(idx_size, ele_size, Btor2Instance::line_num_);
         ++(Btor2Instance::line_num_);
     }
@@ -242,7 +272,7 @@ void NodeManager::PrintSort(int idx_size, int ele_size)
     { // arr
         this->PrintSort(-1, idx_size);
         this->PrintSort(-1, ele_size);
-        cout << "array " << this->GetSortLineId(-1, idx_size) << ' ' << this->GetSortLineId(-1, ele_size) << endl;
+        cout<< Btor2Instance::line_num_ << " sort array " << this->GetSortLineId(-1, idx_size) << ' ' << this->GetSortLineId(-1, ele_size) << endl;
         this->SetSortLineId(idx_size, ele_size, Btor2Instance::line_num_);
         ++(Btor2Instance::line_num_);
     }
@@ -250,14 +280,14 @@ void NodeManager::PrintSort(int idx_size, int ele_size)
 
 NodeManager::~NodeManager()
 {
-    for(int i=0;i<bv_nodes_.size();++i)
-        for(int j=0;j<(bv_nodes_[i]).size();++j)
-            if(bv_nodes_[i][j]!=NULL)
+    for (int i = 0; i < bv_nodes_.size(); ++i)
+        for (int j = 0; j < (bv_nodes_[i]).size(); ++j)
+            if (bv_nodes_[i][j] != NULL)
                 delete bv_nodes_[i][j];
-    
-    for(int i=0;i<arr_nodes_.size();++i)
-        for(int j=0;j<(arr_nodes_[i]).size();++j)
-            if(arr_nodes_[i][j]!=NULL)
+
+    for (int i = 0; i < arr_nodes_.size(); ++i)
+        for (int j = 0; j < (arr_nodes_[i]).size(); ++j)
+            if (arr_nodes_[i][j] != NULL)
                 delete arr_nodes_[i][j];
 }
 
@@ -269,9 +299,9 @@ void TreeNode::Print(NodeManager *node_manager)
     node_manager->PrintSort(idx_size_, ele_size_);
     if (this->IsVariable())
     {
-        cout << Btor2Instance::line_num_ << ((this->IsInput()) ? " input " : " state ")
+        cout << Btor2Instance::line_num_ << ((this->IsInputVariable()) ? " input " : " state ")
              << node_manager->GetSortLineId(idx_size_, ele_size_);
-        if (RandLessThan(10) < 9) // may skip output of var name
+        if (RandLessThan(5) < 4) // may skip output of var name
             cout << ' ' << var_name_;
         cout << endl;
         this->SetLineId(Btor2Instance::line_num_);
@@ -334,7 +364,7 @@ void TreeNode::Print(NodeManager *node_manager)
     for (int i = 0; i < this->NumOfSubtrees(); ++i)
         cout << ' ' << (this->IthSubtree(i))->GetLineId();
     for (int i = 0; i < this->NumOfArgs(); ++i)
-        cout << ' ' << (this->IthSubtree(i))->IthArg(i);
+        cout << ' ' << this->IthArg(i);
     cout << endl;
     this->SetLineId(Btor2Instance::line_num_);
     ++(Btor2Instance::line_num_);
@@ -370,6 +400,28 @@ bool TreeNode::IsOnes()
         if (const_val_[i] != true)
             return false;
     return true;
+}
+
+void TreeNode::PrintDebugInfo()
+{
+    cout << "try insert node:" << endl;
+    cout << "sort: " << idx_size_ << ' ' << ele_size_ << endl;
+    cout << "oper: ";
+    this->PrintOpName();
+    cout << endl;
+    cout << "depth: " << depth_ << endl;
+    if (this->IsVariable())
+        cout << "varible node, var_name: " << var_name_ << endl;
+    else if (this->IsConstant())
+    {
+        cout << "constant node, value: ";
+        PrintBoolArr(this->const_val_, ele_size_, BINARY);
+        cout << endl;
+    }
+    else
+    {
+        cout << "inner node with " << sub_nodes_.size() << "sub-nodes" << endl;
+    }
 }
 
 void TreeNode::PrintOpName()

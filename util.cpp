@@ -1,10 +1,10 @@
 #include "util.h"
 #include <cmath>
 #include <cstring>
-#include <cstdlib>
+//#include <cstdlib>
 #include <iostream>
+#include <sstream>
 #include <string>
-#include <fstream>
 
 using std::cout;
 using std::endl;
@@ -51,144 +51,35 @@ void PrintBoolArr(bool *p, int ele_size, OutputType output_type)
     }
 }
 
-bool GetVarInfo(char *input, Configuration *config) //, bool is_file)
+bool GetCandidateSizes(char *input_, Configuration *config)
 {
-    string token;
-    int anonymous_bv_cnt = 0, anonymous_arr_cnt = 0;
-    // if (is_file)
-    // {
-    std::ifstream fin;
-    fin.open(input, std::ios::in);
-    if (fin.is_open() == false)
-    {
-        cout << "Cannot open the file: " << input << endl
-             << endl;
-        return false;
-    }
-    fin >> token;
-    bool is_bv = (token == "bv");
-    while (true)
-    {
-        int idx_size, ele_size;
-        if (is_bv)
-        {
-            fin >> ele_size;
-            (config->bv_vars_size_).push_back(ele_size);
-            if (!(fin >> token))
+    string input(input_);
+    auto delimiter = input.find("..");
+    if (delimiter == string::npos)
+    { // set
+        std::stringstream sin(input);
+        string cur_s;
+        while (std::getline(sin, cur_s, ','))
+            if (cur_s.size() != 0)
             {
-                config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-                ++anonymous_bv_cnt;
-                break;
-            }
-            else if (token == "bv" || token == "arr")
-            {
-                is_bv = (token == "bv");
-                config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-                ++anonymous_bv_cnt;
-            }
-            else
-            {
-                config->bv_vars_name_.push_back(token);
-                if (!(fin >> token))
-                    break;
+                int tmp_i;
+                if (Safe_Stoi(cur_s, tmp_i))
+                    (config->candidate_sizes_).push_back(tmp_i);
                 else
-                    is_bv = (token == "bv");
+                    return false;
             }
-        }
-        else
-        {
-            fin >> idx_size >> ele_size;
-            (config->arr_vars_idx_size_).push_back(idx_size);
-            (config->arr_vars_ele_size_).push_back(ele_size);
-            if (!(fin >> token))
-            {
-                config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-                                                 "_v" + std::to_string(anonymous_bv_cnt));
-                ++anonymous_arr_cnt;
-                break;
-            }
-            else if (token == "bv" || token == "arr")
-            {
-                is_bv = (token == "bv");
-                config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-                                                 "_v" + std::to_string(anonymous_bv_cnt));
-                ++anonymous_arr_cnt;
-            }
-            else
-            {
-                config->arr_vars_name_.push_back(token);
-                if (!(fin >> token))
-                    break;
-                else
-                    is_bv = (token == "bv");
-            }
-        }
     }
-    // }
-    // else
-    // {
-    //     std::stringstream sin;
-    //     sin << input;
-    //     sin >> token;
-    //     bool is_bv = (token == "bv");
-    //     while (true)
-    //     {
-    //         int idx_size, ele_size;
-    //         if (is_bv)
-    //         {
-    //             sin >> ele_size;
-    //             (config->bv_vars_size_).push_back(ele_size);
-    //             if (!(sin >> token))
-    //             {
-    //                 config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-    //                 ++anonymous_bv_cnt;
-    //                 break;
-    //             }
-    //             else if (token == "bv" || token == "arr")
-    //             {
-    //                 is_bv = (token == "bv");
-    //                 config->bv_vars_name_.push_back("_bv" + std::to_string(ele_size) + "_v" + std::to_string(anonymous_bv_cnt));
-    //                 ++anonymous_bv_cnt;
-    //             }
-    //             else
-    //             {
-    //                 config->bv_vars_name_.push_back(token);
-    //                 if (!(sin >> token))
-    //                     break;
-    //                 else
-    //                     is_bv = (token == "bv");
-    //             }
-    //         }
-    //         else
-    //         {
-    //             sin >> idx_size >> ele_size;
-    //             (config->arr_vars_idx_size_).push_back(idx_size);
-    //             (config->arr_vars_ele_size_).push_back(ele_size);
-    //             if (!(sin >> token))
-    //             {
-    //                 config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-    //                                                  "_v" + std::to_string(anonymous_bv_cnt));
-    //                 ++anonymous_arr_cnt;
-    //                 break;
-    //             }
-    //             else if (token == "bv" || token == "arr")
-    //             {
-    //                 is_bv = (token == "bv");
-    //                 config->arr_vars_name_.push_back("_arr" + std::to_string(idx_size) + "to" + std::to_string(ele_size) +
-    //                                                  "_v" + std::to_string(anonymous_bv_cnt));
-    //                 ++anonymous_arr_cnt;
-    //             }
-    //             else
-    //             {
-    //                 config->arr_vars_name_.push_back(token);
-    //                 if (!(sin >> token))
-    //                     break;
-    //                 else
-    //                     is_bv = (token == "bv");
-    //             }
-    //         }
-    //     }
-    // }
+    else
+    { // range, closed interval
+        int left, right;
+        if (!Safe_Stoi(input.substr(0, delimiter), left))
+            return false;
+        if (!Safe_Stoi(input.substr(delimiter + 2), right))
+            return false;
+        for (int i = left; i <= right; ++i)
+            (config->candidate_sizes_).push_back(i);
+    }
+    std::sort((config->candidate_sizes_).begin(), (config->candidate_sizes_).end());
     return true;
 }
 
@@ -196,39 +87,54 @@ bool GetConfigInfo(int argc, char **argv, Configuration *config)
 {
     for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(argv[i], "-h") || strcmp(argv[i], "--help"))
+        if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
             return false;
-        else if (strcmp(argv[i], "--tree-depth"))
+        else if (strcmp(argv[i], "--max-depth") == 0)
         {
             ++i;
-            config->tree_depth_ = atoi(argv[i]);
-        }
-        else if (strcmp(argv[i], "--bad-properties"))
-        {
-            ++i;
-            config->bad_property_num_ = atoi(argv[i]);
-        }
-        else if (strcmp(argv[i], "--constraints"))
-        {
-            ++i;
-            config->constraint_num_ = atoi(argv[i]);
-        }
-        else if (strcmp(argv[i], "--seed"))
-        {
-            ++i;
-            config->seed_ = atoi(argv[i]);
-        }
-        // else if (strcmp(argv[i], "--variables-str"))
-        // {
-        //     ++i;
-        //     if (!GetVarInfo(argv[i], config, false))
-        //         return false;
-        // }
-        else if (strcmp(argv[i], "--variables-file"))
-        {
-            ++i;
-            if (!GetVarInfo(argv[i], config)) //, true))
+            if (!Safe_Stoi(string(argv[i]), config->max_depth_))
                 return false;
+        }
+        else if (strcmp(argv[i], "--bad-properties") == 0)
+        {
+            ++i;
+            if (!Safe_Stoi(string(argv[i]), config->bad_property_num_))
+                return false;
+        }
+        else if (strcmp(argv[i], "--constraints") == 0)
+        {
+            ++i;
+            if (!Safe_Stoi(string(argv[i]), config->constraint_num_))
+                return false;
+        }
+        else if (strcmp(argv[i], "--seed") == 0)
+        {
+            ++i;
+            if (!Safe_Stoi(string(argv[i]), config->seed_))
+                return false;
+        }
+        else if (strcmp(argv[i], "--bv-states") == 0)
+        {
+            ++i;
+            if (!Safe_Stoi(string(argv[i]), config->bv_state_vars_num_))
+                return false;
+        }
+        else if (strcmp(argv[i], "--arr-states") == 0)
+        {
+            ++i;
+            if (!Safe_Stoi(string(argv[i]), config->arr_state_vars_num_))
+                return false;
+        }
+        else if (strcmp(argv[i], "--max-inputs") == 0)
+        {
+            ++i;
+            if (!Safe_Stoi(string(argv[i]), config->max_input_num_))
+                return false;
+        }
+        else if (strcmp(argv[i], "--candidate-sizes") == 0)
+        {
+            ++i;
+            GetCandidateSizes(argv[i], config);
         }
         else
         {
@@ -237,13 +143,9 @@ bool GetConfigInfo(int argc, char **argv, Configuration *config)
             return false;
         }
     }
-    if (config->bv_vars_name_.empty() && config->arr_vars_name_.empty())
-    {
-        config->bv_vars_size_.push_back(1);
-        config->bv_vars_name_.push_back("_bv1_v0");
-        config->bv_vars_size_.push_back(8);
-        config->bv_vars_name_.push_back("_bv8_v1");
-    }
+    if (config->candidate_sizes_.empty())
+        for (int i = 1; i < 9; ++i)
+            (config->candidate_sizes_).push_back(i);
     return true;
 }
 
@@ -257,21 +159,38 @@ void Usage()
          << "    print this help information" << endl;
     cout << "--seed INT\n"
          << "    seed for generating random number (default 0)" << endl;
-    cout << "--tree-depth INT\n"
-         << "    the depth of the corresponding syntax tree  (default 4)" << endl;
+    cout << "--max-depth INT\n"
+         << "    the maximal depth of the corresponding syntax tree  (default 4)" << endl;
     cout << "--bad-properties INT\n"
          << "    the number of bad properties (default 1)" << endl;
     cout << "--constraints INT\n"
-         << "    the number of constraints (default 1)" << endl;
-    cout << "--variables-file FILE_NAME\n"
-         << "    the file that contains the information of variables" << endl;
-    cout << "\nFormat of the variables information file:" << endl;
-    cout << "  <bv_var>  ::= 'bv' INT [STRING]" << endl;
-    cout << "  <arr_var> ::= 'arr' INT INT [STRING]" << endl;
-    cout << "  <var>     ::= <bv_var> | <arr_var>" << endl;
-    cout << "  <file>    ::= (<var>'\\n')*" << endl;
-    cout << "Example (which is also the default situattion):" << endl;
-    cout << "  bv 1 _bv1_v0" << endl
-         << "  bv 8 _bv8_v1" << endl
+         << "    the number of constraints (default 0)" << endl;
+    cout << "--bv-states INT\n"
+         << "    the number of bit-vector state variables (default 2)" << endl;
+    cout << "--arr-states INT\n"
+         << "    the number of array state variables (default 0)" << endl;
+    cout << "--max-inputs INT\n"
+         << "    the maximum number of input variables (default 1)" << endl;
+    cout << "--candidate-sizes RANGE | SET\n"
+         << "    the set of possile sizes used to specify variables sorts (default [1 8])" << endl
+         << "    RANGE is of the form of INT..INT (e.g., 4..8)." << endl
+         << "    SET is of the form of INT(,INT)* (e.g., 8,16,32). Note that space char (' ') is not allowed here." << endl
          << endl;
+    cout << "Example:\n"
+         << "./btor2fuzz --seed 10 --tree-depth 3 --constraints 0  --max-inputs 3 --possible-sizes 4..8" << endl
+         << endl;
+}
+
+bool Safe_Stoi(const std::string &s, int &i)
+{
+    try
+    {
+        i = std::stoi(s);
+        return true;
+    }
+    catch (...)
+    {
+        cout << s << " is invalid input integer" << endl;
+        return false;
+    }
 }

@@ -16,4 +16,6 @@ void Usage();
 
 bool GetConfigInfo(int argc, char **argv, Configuration *config);
 
+bool Safe_Stoi(const std::string &, int &);
+
 #endif

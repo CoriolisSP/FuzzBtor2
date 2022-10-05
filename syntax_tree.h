@@ -82,14 +82,17 @@ public:
         CONCAT
     } oper;
 
-    TreeNode(oper op, int ele_size, string v_name)
-        : op_(op), idx_size_(-1), ele_size_(ele_size), depth_(1), line_id_(-1), var_name_(v_name), const_val_(NULL), is_input_var_(false), init_value_(NULL) {}
+    TreeNode(oper op, int ele_size, string v_name, bool is_input)
+        : op_(op), idx_size_(-1), ele_size_(ele_size), depth_(1), line_id_(-1),
+          var_name_(v_name), const_val_(NULL), is_input_var_(is_input) {} //, init_value_(NULL) {}
 
     TreeNode(oper op, int idx_size, int ele_size, string v_name)
-        : op_(op), idx_size_(idx_size), ele_size_(ele_size), depth_(1), line_id_(-1), var_name_(v_name), const_val_(NULL), is_input_var_(false), init_value_(NULL) {}
+        : op_(op), idx_size_(idx_size), ele_size_(ele_size), depth_(1), line_id_(-1),
+          var_name_(v_name), const_val_(NULL), is_input_var_(false) {} //, init_value_(NULL) {}
 
     TreeNode(oper op, int idx_size, int ele_size, int depth)
-        : op_(op), idx_size_(idx_size), ele_size_(ele_size), depth_(depth), line_id_(-1), var_name_(""), const_val_(NULL), is_input_var_(false), init_value_(NULL) {}
+        : op_(op), idx_size_(idx_size), ele_size_(ele_size), depth_(depth), line_id_(-1),
+          var_name_(""), const_val_(NULL), is_input_var_(false) {} //, init_value_(NULL) {}
 
     // constant node
     TreeNode(int val, int ele_size);
@@ -152,13 +155,7 @@ public:
     inline void SetLineId(int line_id) { line_id_ = line_id; }
     inline int GetLineId() { return line_id_; }
 
-    inline void SetAsInput()
-    {
-        assert(this->IsVariable());
-        init_value_ = NULL;
-        is_input_var_ = true;
-    }
-    inline bool IsInput()
+    inline bool IsInputVariable()
     {
         return is_input_var_;
     }
@@ -166,8 +163,10 @@ public:
     bool IsOne();  // constant 1
     bool IsOnes(); // constant ffffff
 
-    inline void SetInitValue(TreeNode *init_val) { init_value_ = init_val; }
-    inline TreeNode *GetInitValue() { return init_value_; }
+    // inline void SetInitValue(TreeNode *init_val) { init_value_ = init_val; }
+    // inline TreeNode *GetInitValue() { return init_value_; }
+
+    void PrintDebugInfo();
 
 private:
     oper op_;
@@ -185,7 +184,7 @@ private:
 
     bool is_input_var_;
 
-    TreeNode *init_value_; // only for bv state variables
+    // TreeNode *init_value_; // only for bv state variables
 
     vector<TreeNode *> sub_nodes_;
     vector<int> indexed_args_;
@@ -201,7 +200,8 @@ public:
     ~NodeManager();
 
     TreeNode *InsertNode(TreeNode *);
-    TreeNode *GetNode(int idx_size, int ele_size, int tree_depth = -1);
+    TreeNode *GetNode(int idx_size, int ele_size, int tree_depth);
+    TreeNode *GetVarNode(int idx_size, int ele_size, bool state_var, bool for_init = false);
 
     int GetSortLineId(int idx_size, int ele_size);
     inline bool IsPrintedSort(int idx_size, int ele_size)
