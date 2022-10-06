@@ -28,9 +28,12 @@ struct Configuration
     // seed for the random number generator
     int seed_;
 
+    // can be translates into vmt
+    bool to_vmt_;
+
     Configuration()
         : bv_state_vars_num_(2), arr_state_vars_num_(0), max_input_num_(1),
-          bad_property_num_(1), constraint_num_(0), max_depth_(4), seed_(0) {}
+          bad_property_num_(1), constraint_num_(0), max_depth_(4), seed_(0), to_vmt_(false) {}
 
     inline bool IsCandidateSort(int idx_size, int ele_size)
     {

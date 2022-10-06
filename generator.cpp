@@ -334,18 +334,18 @@ TreeNode *Btor2Instance::WhenLeafNode(int idx_size, int ele_size, bool for_init)
 {
     if (!for_init)
     {
-        int dice_7 = RandLessThan(7);
+        int dice_6 = RandLessThan(6);
         if (idx_size > 0) // arr sort
-            dice_7 = 4;   // cannot be constant or input
+            dice_6 = 3;   // cannot be constant or input
 
-        if (dice_7 < 2)
-            // 0 1 constant
+        if (dice_6 < 1)
+            // 0 constant
             return ConstructNode_CONSTANT(ele_size);
         if ((config_->IsCandidateSort(idx_size, ele_size)) == false)
             // sort is invalid
             return NULL;
-        if (dice_7 < 4)
-        { // 2 3 input var
+        if (dice_6 < 3)
+        { // 1 2 input var
             TreeNode *tmp_node = node_manager_->GetVarNode(idx_size, ele_size, false);
             assert(tmp_node == NULL || tmp_node->IsInputVariable());
             bool existing = (tmp_node != NULL);
@@ -366,7 +366,7 @@ TreeNode *Btor2Instance::WhenLeafNode(int idx_size, int ele_size, bool for_init)
             }
         }
         else
-        { // 4 5 6 state var
+        { // 3 4 5 state var
             TreeNode *tmp_node = node_manager_->GetVarNode(idx_size, ele_size, true);
             assert(tmp_node == NULL || !(tmp_node->IsInputVariable()));
             bool existing = (tmp_node != NULL);
@@ -415,30 +415,74 @@ void Btor2Instance::GetPossibleOps(vector<TreeNode::oper> &possible_ops, bool is
     possible_ops.clear();
     if (is_bool)
     {
-        TreeNode::oper candidate[] = {
-            TreeNode::SLICE,
-            TreeNode::NOT, TreeNode::INC, TreeNode::DEC, TreeNode::NEG,
+        // TreeNode::oper candidate[] = {
+        //     TreeNode::SLICE,
+        //     TreeNode::NOT, TreeNode::INC, TreeNode::DEC, TreeNode::NEG,
+        //     TreeNode::REDAND, TreeNode::REDOR, TreeNode::REDXOR,
+        //     TreeNode::IFF, TreeNode::IMPLIES,
+        //     TreeNode::EQ, TreeNode::NEQ,
+        //     TreeNode::SGT, TreeNode::UGT, TreeNode::SGTE, TreeNode::UGTE, TreeNode::SLT, TreeNode::ULT, TreeNode::SLTE, TreeNode::ULTE, TreeNode::SADDO, TreeNode::UADDO, TreeNode::SDIVO, TreeNode::UDIVO, TreeNode::SMULO, TreeNode::UMULO, TreeNode::SSUBO, TreeNode::USUBO,
+        //     TreeNode::AND, TreeNode::NAND, TreeNode::NOR, TreeNode::OR, TreeNode::XNOR, TreeNode::XOR, TreeNode::ROL, TreeNode::ROR, TreeNode::SLL, TreeNode::SRA, TreeNode::SRL, TreeNode::ADD, TreeNode::MUL, TreeNode::SDIV, TreeNode::UDIV, TreeNode::SMOD, TreeNode::SREM, TreeNode::UREM, TreeNode::SUB,
+        //     TreeNode::READ,
+        //     TreeNode::ITE};
+        TreeNode::oper vmt_ops[] = {
+            TreeNode::NOT, TreeNode::AND, TreeNode::OR,
+            TreeNode::XNOR, TreeNode::SGT, TreeNode::SGTE,
+            TreeNode::XOR, TreeNode::NEG, TreeNode::IMPLIES,
+            TreeNode::SLICE, TreeNode::EQ, TreeNode::NEQ,
+            TreeNode::UGT, TreeNode::UGTE, TreeNode::ADD,
             TreeNode::REDAND, TreeNode::REDOR, TreeNode::REDXOR,
-            TreeNode::IFF, TreeNode::IMPLIES,
-            TreeNode::EQ, TreeNode::NEQ,
-            TreeNode::SGT, TreeNode::UGT, TreeNode::SGTE, TreeNode::UGTE, TreeNode::SLT, TreeNode::ULT, TreeNode::SLTE, TreeNode::ULTE, TreeNode::SADDO, TreeNode::UADDO, TreeNode::SDIVO, TreeNode::UDIVO, TreeNode::SMULO, TreeNode::UMULO, TreeNode::SSUBO, TreeNode::USUBO,
-            TreeNode::AND, TreeNode::NAND, TreeNode::NOR, TreeNode::OR, TreeNode::XNOR, TreeNode::XOR, TreeNode::ROL, TreeNode::ROR, TreeNode::SLL, TreeNode::SRA, TreeNode::SRL, TreeNode::ADD, TreeNode::MUL, TreeNode::SDIV, TreeNode::UDIV, TreeNode::SMOD, TreeNode::SREM, TreeNode::UREM, TreeNode::SUB,
-            TreeNode::READ,
-            TreeNode::ITE};
-        possible_ops = vector<TreeNode::oper>(std::begin(candidate), std::end(candidate));
+            TreeNode::SUB, TreeNode::ULT, TreeNode::ITE,
+            TreeNode::ULTE, TreeNode::SLT, TreeNode::SDIV,
+            TreeNode::SLL, TreeNode::SRA, TreeNode::SRL,
+            TreeNode::SREM, TreeNode::READ, TreeNode::MUL,
+            TreeNode::UREM, TreeNode::UDIV};
+
+        TreeNode::oper non_vmt_ops[] = {
+            TreeNode::INC, TreeNode::DEC, TreeNode::IFF,
+            TreeNode::SLTE, TreeNode::SADDO, TreeNode::UADDO,
+            TreeNode::SDIVO, TreeNode::UDIVO, TreeNode::SMULO,
+            TreeNode::UMULO, TreeNode::SSUBO, TreeNode::USUBO,
+            TreeNode::NAND, TreeNode::NOR, TreeNode::ROL,
+            TreeNode::ROR, TreeNode::SMOD};
+        possible_ops = vector<TreeNode::oper>(std::begin(vmt_ops), std::end(vmt_ops));
+        if (!(config_->to_vmt_))
+        {
+            vector<TreeNode::oper> tmp = vector<TreeNode::oper>(std::begin(non_vmt_ops), std::end(non_vmt_ops));
+            possible_ops.insert(possible_ops.end(), tmp.begin(), tmp.end());
+        }
         std::random_shuffle(possible_ops.begin(), possible_ops.end());
     }
     else
     {
-        TreeNode::oper candidate[] = {
-            TreeNode::SEXT, TreeNode::UEXT,
-            TreeNode::SLICE,
-            TreeNode::NOT, TreeNode::INC, TreeNode::DEC, TreeNode::NEG,
-            TreeNode::AND, TreeNode::NAND, TreeNode::NOR, TreeNode::OR, TreeNode::XNOR, TreeNode::XOR, TreeNode::ROL, TreeNode::ROR, TreeNode::SLL, TreeNode::SRA, TreeNode::SRL, TreeNode::ADD, TreeNode::MUL, TreeNode::SDIV, TreeNode::UDIV, TreeNode::SMOD, TreeNode::SREM, TreeNode::UREM, TreeNode::SUB,
-            TreeNode::CONCAT,
-            TreeNode::READ,
+        // TreeNode::oper candidate[] = {
+        //     TreeNode::SEXT, TreeNode::UEXT,
+        //     TreeNode::SLICE,
+        //     TreeNode::NOT, TreeNode::INC, TreeNode::DEC, TreeNode::NEG,
+        //     TreeNode::AND, TreeNode::NAND, TreeNode::NOR, TreeNode::OR, TreeNode::XNOR, TreeNode::XOR, TreeNode::ROL, TreeNode::ROR, TreeNode::SLL, TreeNode::SRA, TreeNode::SRL, TreeNode::ADD, TreeNode::MUL, TreeNode::SDIV, TreeNode::UDIV, TreeNode::SMOD, TreeNode::SREM, TreeNode::UREM, TreeNode::SUB,
+        //     TreeNode::CONCAT,
+        //     TreeNode::READ,
+        //     TreeNode::ITE};
+        TreeNode::oper vmt_ops[] = {
+            TreeNode::SLICE, TreeNode::NOT, TreeNode::NEG,
+            TreeNode::OR, TreeNode::XNOR, TreeNode::XOR,
+            TreeNode::SEXT, TreeNode::SLL, TreeNode::SRA,
+            TreeNode::SRL, TreeNode::UEXT, TreeNode::AND,
+            TreeNode::READ, TreeNode::ADD, TreeNode::SDIV,
+            TreeNode::UDIV, TreeNode::SREM, TreeNode::UREM,
+            TreeNode::SUB, TreeNode::MUL, TreeNode::CONCAT,
             TreeNode::ITE};
-        possible_ops = vector<TreeNode::oper>(std::begin(candidate), std::end(candidate));
+
+        TreeNode::oper non_vmt_ops[] = {
+            TreeNode::INC, TreeNode::DEC, TreeNode::NAND,
+            TreeNode::NOR, TreeNode::ROL, TreeNode::ROR,
+            TreeNode::SMOD};
+        possible_ops = vector<TreeNode::oper>(std::begin(vmt_ops), std::end(vmt_ops));
+        if (!(config_->to_vmt_))
+        {
+            vector<TreeNode::oper> tmp = vector<TreeNode::oper>(std::begin(non_vmt_ops), std::end(non_vmt_ops));
+            possible_ops.insert(possible_ops.end(), tmp.begin(), tmp.end());
+        }
         std::random_shuffle(possible_ops.begin(), possible_ops.end());
     }
 }
@@ -856,7 +900,7 @@ void Btor2Instance::Print()
 {
     if (bad_properties_.empty() || TransitionAllNull())
     {
-        cout << "Construct completely Failed." << endl;
+        cout << "*** FuzzBtor2: Construct completely Failed." << endl;
         return;
     }
     Btor2Instance::line_num_ = 1;

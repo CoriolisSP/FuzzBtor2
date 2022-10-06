@@ -247,14 +247,24 @@ void NodeManager::SetSortLineId(int idx_size, int ele_size, int line_id)
         auto target_it = find(bv_size_.begin(), bv_size_.end(), ele_size);
         if (target_it != bv_size_.end())
             bv_sort_line_id_[std::distance(bv_size_.begin(), target_it)] = line_id;
+        else
+        {
+            bv_size_.push_back(ele_size);
+            bv_nodes_.push_back(vector<TreeNode *>());
+            bv_sort_line_id_.push_back(line_id);
+        }
     }
     else
     {
         for (int i = 0; i < arr_sort_.size(); i++)
         {
             if (arr_sort_[i].first == idx_size && arr_sort_[i].second == ele_size)
+            {
                 arr_sort_line_id_[i] = line_id;
+                return;
+            }
         }
+        assert(false); // cannot arrive here
     }
 }
 
@@ -264,7 +274,7 @@ void NodeManager::PrintSort(int idx_size, int ele_size)
         return;
     if (idx_size == -1)
     { // bv
-        cout<< Btor2Instance::line_num_ << " sort bitvec " << ele_size << endl;
+        cout << Btor2Instance::line_num_ << " sort bitvec " << ele_size << endl;
         this->SetSortLineId(idx_size, ele_size, Btor2Instance::line_num_);
         ++(Btor2Instance::line_num_);
     }
@@ -272,7 +282,9 @@ void NodeManager::PrintSort(int idx_size, int ele_size)
     { // arr
         this->PrintSort(-1, idx_size);
         this->PrintSort(-1, ele_size);
-        cout<< Btor2Instance::line_num_ << " sort array " << this->GetSortLineId(-1, idx_size) << ' ' << this->GetSortLineId(-1, ele_size) << endl;
+        assert(IsPrintedSort(-1, idx_size));
+        assert(IsPrintedSort(-1, ele_size));
+        cout << Btor2Instance::line_num_ << " sort array " << this->GetSortLineId(-1, idx_size) << ' ' << this->GetSortLineId(-1, ele_size) << endl;
         this->SetSortLineId(idx_size, ele_size, Btor2Instance::line_num_);
         ++(Btor2Instance::line_num_);
     }
@@ -361,10 +373,16 @@ void TreeNode::Print(NodeManager *node_manager)
     cout << Btor2Instance::line_num_ << ' ';
     PrintOpName();
     cout << ' ' << node_manager->GetSortLineId(idx_size_, ele_size_);
-    for (int i = 0; i < this->NumOfSubtrees(); ++i)
-        cout << ' ' << (this->IthSubtree(i))->GetLineId();
-    for (int i = 0; i < this->NumOfArgs(); ++i)
-        cout << ' ' << this->IthArg(i);
+    if (op_ == ITE) // first operand of ite can be negative, indicating logical negation.
+        cout << ' ' << ((RandLessThan(3) < 1) ? "-" : "") << (this->IthSubtree(0))->GetLineId()
+             << ' ' << (this->IthSubtree(1))->GetLineId() << ' ' << (this->IthSubtree(2))->GetLineId();
+    else
+    {
+        for (int i = 0; i < this->NumOfSubtrees(); ++i)
+            cout << ' ' << (this->IthSubtree(i))->GetLineId();
+        for (int i = 0; i < this->NumOfArgs(); ++i)
+            cout << ' ' << this->IthArg(i);
+    }
     cout << endl;
     this->SetLineId(Btor2Instance::line_num_);
     ++(Btor2Instance::line_num_);

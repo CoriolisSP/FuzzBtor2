@@ -1,7 +1,6 @@
 #include "util.h"
 #include <cmath>
 #include <cstring>
-//#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -136,9 +135,13 @@ bool GetConfigInfo(int argc, char **argv, Configuration *config)
             ++i;
             GetCandidateSizes(argv[i], config);
         }
+        else if (strcmp(argv[i], "--to-vmt") == 0)
+        {
+            config->to_vmt_ = true;
+        }
         else
         {
-            cout << argv[i] << " is invalid option.\n"
+            cout << "*** FuzzBtor2: " << argv[i] << " is invalid option.\n"
                  << endl;
             return false;
         }
@@ -161,6 +164,9 @@ void Usage()
          << "    seed for generating random number (default 0)" << endl;
     cout << "--max-depth INT\n"
          << "    the maximal depth of the corresponding syntax tree  (default 4)" << endl;
+    cout << "--to-vmt\n"
+         << "    only uses operators that supported by vmt-tools/btor2vmt;" << endl
+         << "    can use all operators permitted by Btor2 if omitted" << endl;
     cout << "--bad-properties INT\n"
          << "    the number of bad properties (default 1)" << endl;
     cout << "--constraints INT\n"
@@ -190,7 +196,7 @@ bool Safe_Stoi(const std::string &s, int &i)
     }
     catch (...)
     {
-        cout << s << " is invalid input integer" << endl;
+        cout << "*** FuzzBtor2: " << s << " is invalid input integer" << endl;
         return false;
     }
 }
