@@ -210,7 +210,7 @@ TreeNode *Btor2Instance::GenerateSyntaxTree(int idx_size, int ele_size, int tree
             case TreeNode::SADDO:
             case TreeNode::UADDO:
             case TreeNode::SDIVO:
-            case TreeNode::UDIVO:
+            // case TreeNode::UDIVO:
             case TreeNode::SMULO:
             case TreeNode::UMULO:
             case TreeNode::SSUBO:
@@ -441,7 +441,7 @@ void Btor2Instance::GetPossibleOps(vector<TreeNode::oper> &possible_ops, bool is
         TreeNode::oper non_vmt_ops[] = {
             TreeNode::INC, TreeNode::DEC, TreeNode::IFF,
             TreeNode::SLTE, TreeNode::SADDO, TreeNode::UADDO,
-            TreeNode::SDIVO, TreeNode::UDIVO, TreeNode::SMULO,
+            TreeNode::SDIVO, TreeNode::SMULO, // TreeNode::UDIVO,
             TreeNode::UMULO, TreeNode::SSUBO, TreeNode::USUBO,
             TreeNode::NAND, TreeNode::NOR, TreeNode::ROL,
             TreeNode::ROR, TreeNode::SMOD};
