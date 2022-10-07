@@ -2,6 +2,6 @@ test.sh
 
 gmon.out
 
-btor2fuzz
+fuzzbtor2
 
 .vscode/

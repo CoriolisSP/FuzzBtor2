@@ -903,6 +903,7 @@ void Btor2Instance::Print()
         cout << "*** FuzzBtor2: Construct completely Failed." << endl;
         return;
     }
+    config_->Print();
     Btor2Instance::line_num_ = 1;
     // print init exprs by topo sort of var dependency
     for (auto it = init_topo_seq_.rbegin(); it != init_topo_seq_.rend(); ++it)
@@ -977,6 +978,21 @@ void Btor2Instance::Print()
         cout << line_num_ << " constraint " << constraints_[i]->GetLineId() << endl;
         (Btor2Instance::line_num_)++;
     }
+}
+
+void Configuration::Print()
+{
+    cout << "; seed for random number: " << seed_ << endl;
+    cout << "; maximal depth of syntax trees: " << max_depth_ << endl;
+    cout << "; number of bit-vector state variables: " << bv_state_vars_num_ << endl;
+    cout << "; number of array state variables: " << arr_state_vars_num_ << endl;
+    cout << "; maximum number of input variables: " << max_input_num_ << endl;
+    cout << "; number of bad properties: " << bad_property_num_ << endl;
+    cout << "; number of constraints: " << constraint_num_ << endl;
+    cout << "; candidate sizes:";
+    for (auto it = candidate_sizes_.begin(); it != candidate_sizes_.end(); ++it)
+        cout << ' ' << *it;
+    cout << endl;
 }
 
 void StateDependencies::AddDependedByCur(TreeNode *v)

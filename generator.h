@@ -44,6 +44,8 @@ struct Configuration
             return false;
         return true;
     }
+
+    void Print();
 };
 
 class StateDependencies // state dependencies in init expression

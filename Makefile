@@ -5,15 +5,15 @@ FLAG    	= -I./  -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS #-fsanitize=addr
 RELEASEFLAG = 	-O3
 DEBUGFLAG   =	-D DEBUG -g -pg
 
-btor2fuzz	:	release
+fuzzbtor2	:	release
 
 .PHONY 		:	release debug clean
 
 release		:	$(ALLFILES)
-			$(CC) $(FLAG) $(RELEASEFLAG) $(ALLFILES) -lm -o btor2fuzz -std=c++11
+			$(CC) $(FLAG) $(RELEASEFLAG) $(ALLFILES) -lm -o fuzzbtor2 -std=c++11
 
 debug		:	$(ALLFILES)
-			$(CC) $(FLAG) $(DEBUGFLAG) $(ALLFILES) -lm -o btor2fuzz -std=c++11
+			$(CC) $(FLAG) $(DEBUGFLAG) $(ALLFILES) -lm -o fuzzbtor2 -std=c++11
 
 clean		:
-			rm -f *.o btor2fuzz
+			rm -f *.o fuzzbtor2

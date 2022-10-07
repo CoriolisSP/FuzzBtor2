@@ -163,7 +163,7 @@ void Usage()
     cout << "--seed INT\n"
          << "    seed for generating random number (default 0)" << endl;
     cout << "--max-depth INT\n"
-         << "    the maximal depth of the corresponding syntax tree  (default 4)" << endl;
+         << "    the maximal depth of syntax trees  (default 4)" << endl;
     cout << "--to-vmt\n"
          << "    only uses operators that supported by vmt-tools/btor2vmt;" << endl
          << "    can use all operators permitted by Btor2 if omitted" << endl;

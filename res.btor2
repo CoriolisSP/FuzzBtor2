@@ -1,3 +1,11 @@
+; seed for random number: 12
+; maximal depth of syntax trees: 5
+; number of bit-vector state variables: 3
+; number of array state variables: 0
+; maximum number of input variables: 3
+; number of bad properties: 1
+; number of constraints: 0
+; candidate sizes: 1 8 16 32
 1 sort bitvec 16
 2 sort bitvec 32
 3 ones 2
