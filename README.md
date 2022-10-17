@@ -2,9 +2,9 @@
 
 FuzzBtor2 is a fuzzer to generate random word-level model checking problems in Btor2 format.
 
-Our recommended running and comilation environment is Linux + gcc/g++.
+Our recommended running and compilation environment is Linux + gcc/g++.
 
-## Complie
+## Compile
 
 Assuming ``${FUZZER_DIR}/FuzzBtor2`` is the path where FuzzBtoor2 is located, one can compile FuzzBtoor2 as follows:
 
