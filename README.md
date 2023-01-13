@@ -22,7 +22,7 @@ The standard command to execute FuzzBtor2 in a Linux system is as follows.
 ```
 Example:
 ```bash
-./btor2fuzz --seed 10 --tree-depth 3 --constraints 0  --max-inputs 3 --possible-sizes 4..8
+./btor2fuzz --seed 10 --max-depth 3 --constraints 0  --max-inputs 3 --possible-sizes 4..8
 ```
 For more detailed usage, please try
 ```bash
