@@ -6,7 +6,7 @@ Our recommended running and compilation environment is Linux + gcc/g++.
 
 ## Compile
 
-Assuming ``${FUZZER_DIR}/FuzzBtor2`` is the path where FuzzBtoor2 is located, one can compile FuzzBtoor2 as follows:
+Assuming ``${FUZZER_DIR}/FuzzBtor2`` is the path where FuzzBtoor2 is located, one can compile FuzzBtor2 as follows:
 
 ```bash
 cd ${FUZZER_DIR}/FuzzBtor2
