@@ -2,6 +2,9 @@
 
 FuzzBtor2 is a fuzzer to generate random word-level model checking problems in Btor2 format.
 
+#### Research Paper
+- [[TACAS'23](https://link.springer.com/chapter/10.1007/978-3-031-30820-8_5)] FuzzBtor2: A Random Generator of Word-Level Model Checking Problems in Btor2 Format
+
 Our recommended running and compilation environment is Linux + gcc/g++.
 
 ## Compile
